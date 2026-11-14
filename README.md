@@ -23,6 +23,7 @@ SQLite is used locally. PostgreSQL can replace it later without changing the cas
 - Unique reference (`CM-YYYYMMDD-HHMMSS-xxxx`)
 - Status: Open, Awaiting contractor, Awaiting resident, In progress, Closed
 - Case notes and an audit line when status changes
+- Close only after a confirmation page with a written reason (the case is not deleted)
 - Search by reference, address or resident
 - Filters by status, priority and repair type
 - Counts on the case list
@@ -88,4 +89,4 @@ Demo content is operational sample data, not live resident records.
 | `config/` | Django project settings and URLs |
 | `cases/` | Case and note models, views, seed command |
 | `templates/` | Advisor screens |
-| `static/style.css` | Same navy housing-ICT look as the other two tools |
+| `static/style.css` | Case-desk theme (forest rail, parchment, terracotta) — not the navy diagnostic look |

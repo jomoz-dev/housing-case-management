@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import CaseForm, CaseNoteForm, StatusForm
+from .forms import CaseForm, CaseNoteForm, CloseCaseForm, StatusForm
 from .models import Case, CaseNote
 
 
@@ -101,6 +101,8 @@ def case_detail(request, reference):
                 messages.success(request, "Note added to the case record.")
                 return redirect(case)
         elif action == "status":
+            if request.POST.get("status") == Case.STATUS_CLOSED:
+                return redirect("case_close", reference=case.reference)
             status_form = StatusForm(request.POST)
             if status_form.is_valid():
                 new_status = status_form.cleaned_data["status"]
@@ -130,3 +132,31 @@ def case_detail(request, reference):
             "status_form": status_form,
         },
     )
+
+
+@login_required
+def case_close(request, reference):
+    case = get_object_or_404(Case, reference=reference)
+    if case.status == Case.STATUS_CLOSED:
+        messages.info(request, "This case is already closed.")
+        return redirect(case)
+
+    if request.method == "POST":
+        form = CloseCaseForm(request.POST)
+        if form.is_valid():
+            reason = form.cleaned_data["reason"].strip()
+            old = case.get_status_display()
+            case.status = Case.STATUS_CLOSED
+            case.save()
+            CaseNote.objects.create(
+                case=case,
+                author=request.user,
+                kind=CaseNote.STATUS,
+                body=f"Closed from {old}. Reason: {reason}",
+            )
+            messages.success(request, f"Case {case.reference} closed.")
+            return redirect(case)
+    else:
+        form = CloseCaseForm()
+
+    return render(request, "cases/close.html", {"case": case, "form": form})

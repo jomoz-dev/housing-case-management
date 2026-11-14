@@ -1,23 +1,29 @@
 {% extends "base.html" %}
 {% block title %}{{ case.reference }} — Housing Case Management{% endblock %}
 {% block content %}
-<p class="crumb"><a href="{% url 'case_list' %}">Cases</a> / {{ case.reference }}</p>
-<article class="card wide">
-    <p class="pills">
-        <span class="pill priority-{{ case.priority }}">{{ case.get_priority_display }}</span>
-        <span class="pill">{{ case.get_status_display }}</span>
-        <span class="pill">{{ case.get_trade_display }}</span>
-    </p>
-    <h1>{{ case.reference }}</h1>
-    <p class="lede">{{ case.address }}{% if case.resident_name %} · {{ case.resident_name }}{% endif %}</p>
-    <p><strong>{{ case.get_repair_type_display }}</strong> — {{ case.summary }}</p>
+<p class="crumb"><a href="{% url 'case_list' %}">Caseload</a> · {{ case.reference }}</p>
+<article class="dossier">
+    <header class="dossier-head">
+        <p class="eyebrow">Case file</p>
+        <h1 class="ref">{{ case.reference }}</h1>
+        <p class="lede">{{ case.address }}{% if case.resident_name %} · {{ case.resident_name }}{% endif %}</p>
+        <p class="flags">
+            <span class="flag priority-{{ case.priority }}">{{ case.get_priority_display }}</span>
+            <span class="flag status">{{ case.get_status_display }}</span>
+            <span class="flag trade">{{ case.get_trade_display }}</span>
+        </p>
+    </header>
+    <p class="summary"><strong>{{ case.get_repair_type_display }}.</strong> {{ case.summary }}</p>
     <p class="meta">Raised {{ case.created_at|date:"d M Y H:i" }} by {{ case.created_by.username }}{% if case.closed_at %} · Closed {{ case.closed_at|date:"d M Y H:i" }}{% endif %}</p>
 </article>
 
 <div class="split">
-    <section>
-        <h2>Change status</h2>
-        <form method="post" class="card wide">
+    <section class="panel">
+        <h2>Move the job</h2>
+        {% if case.status == 'closed' %}
+        <p class="lede">This case is closed. Reopen it if the job comes back — that writes a new line on the trail.</p>
+        {% endif %}
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="status">
             {{ status_form.status.label_tag }}
@@ -25,12 +31,15 @@
             {{ status_form.comment.label_tag }}
             {{ status_form.comment }}
             <p class="hint">{{ status_form.comment.help_text }}</p>
-            <button type="submit">Update status</button>
+            <button type="submit">{% if case.status == 'closed' %}Reopen / update status{% else %}Update status{% endif %}</button>
         </form>
+        {% if case.status != 'closed' %}
+        <p class="close-link"><a href="{% url 'case_close' case.reference %}">Close this case with a reason</a></p>
+        {% endif %}
     </section>
-    <section>
-        <h2>Add a note</h2>
-        <form method="post" class="card wide">
+    <section class="panel">
+        <h2>Add to the trail</h2>
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="note">
             {{ note_form.body }}
@@ -39,15 +48,15 @@
     </section>
 </div>
 
-<h2>Case record</h2>
-<ul class="timeline">
+<h2>Trail</h2>
+<ol class="trail">
     {% for note in case.notes.all %}
-    <li>
+    <li class="trail-{{ note.kind }}">
         <span class="meta">{{ note.created_at|date:"d M Y H:i" }} · {{ note.author.username }} · {{ note.get_kind_display }}</span>
         <p>{{ note.body }}</p>
     </li>
     {% empty %}
     <li>No notes yet.</li>
     {% endfor %}
-</ul>
+</ol>
 {% endblock %}

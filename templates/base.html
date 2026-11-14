@@ -6,36 +6,42 @@
     <title>{% block title %}Housing Case Management{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-<header class="topbar">
-    <div class="topbar-inner">
-        <a class="brand" href="{% url 'case_list' %}">Housing Case Management</a>
-        {% if user.is_authenticated %}
+<body class="{% if user.is_authenticated and request.resolver_match.url_name != 'login' %}desk{% else %}gate{% endif %}">
+{% if user.is_authenticated and request.resolver_match.url_name != 'login' %}
+<aside class="rail">
+    <p class="rail-kicker">Case desk</p>
+    <a class="brand" href="{% url 'case_list' %}">Housing Case<br>Management</a>
+    <nav class="rail-nav">
+        <a class="{% if request.resolver_match.url_name == 'case_list' or request.resolver_match.url_name == 'case_detail' or request.resolver_match.url_name == 'case_close' %}is-current{% endif %}" href="{% url 'case_list' %}">Caseload</a>
+        <a class="{% if request.resolver_match.url_name == 'case_create' %}is-current{% endif %}" href="{% url 'case_create' %}">Raise a case</a>
+        {% if user.is_staff %}
+        <a href="{% url 'admin:index' %}">Admin</a>
+        {% endif %}
+    </nav>
+    <form class="rail-out" method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Sign out {{ user.username }}</button>
+    </form>
+</aside>
+<div class="workspace">
+    <header class="deskbar">
         <form class="search-form" method="get" action="{% url 'case_list' %}">
             <label class="sr-only" for="q">Search</label>
-            <input id="q" type="text" name="q" value="{{ query|default:'' }}" placeholder="Reference, address, resident…">
-            <button type="submit">Search</button>
+            <input id="q" type="text" name="q" value="{{ query|default:'' }}" placeholder="Find a reference, address or resident">
+            <button type="submit">Find</button>
         </form>
-        <nav class="user-nav">
-            <a href="{% url 'case_create' %}">New case</a>
-            {% if user.is_staff %}
-            <a href="{% url 'admin:index' %}">Admin</a>
-            {% endif %}
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button class="linkish" type="submit">Sign out</button>
-            </form>
-        </nav>
+    </header>
+    <main class="page">
+        {% if messages %}
+        {% for message in messages %}
+        <p class="flash">{{ message }}</p>
+        {% endfor %}
         {% endif %}
-    </div>
-</header>
-<main class="page">
-    {% if messages %}
-    {% for message in messages %}
-    <p class="flash">{{ message }}</p>
-    {% endfor %}
-    {% endif %}
-    {% block content %}{% endblock %}
-</main>
+{% endif %}
+        {% block content %}{% endblock %}
+{% if user.is_authenticated and request.resolver_match.url_name != 'login' %}
+    </main>
+</div>
+{% endif %}
 </body>
 </html>

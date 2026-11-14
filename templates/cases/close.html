@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Close {{ case.reference }} — Housing Case Management{% endblock %}
+{% block content %}
+<p class="crumb"><a href="{% url 'case_list' %}">Caseload</a> · <a href="{{ case.get_absolute_url }}">{{ case.reference }}</a> · Close</p>
+<p class="eyebrow">Confirm close</p>
+<h1>Close {{ case.reference }}</h1>
+<p class="lede">Closing does not delete the case. It stays on the desk as a closed record. You must say why, so a later advisor is not guessing.</p>
+
+<article class="dossier">
+    <p class="flags">
+        <span class="flag priority-{{ case.priority }}">{{ case.get_priority_display }}</span>
+        <span class="flag status">{{ case.get_status_display }}</span>
+        <span class="flag trade">{{ case.get_trade_display }}</span>
+    </p>
+    <p class="summary"><strong>{{ case.address }}.</strong> {{ case.summary }}</p>
+</article>
+
+<form method="post" class="panel close-panel">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+        {{ form.reason.label_tag }}
+        {{ form.reason }}
+        <span class="hint">{{ form.reason.help_text }}</span>
+        {{ form.reason.errors }}
+    </p>
+    <p class="confirm-line">
+        {{ form.confirm }}
+        <label for="{{ form.confirm.id_for_label }}">{{ form.confirm.label }}</label>
+        {{ form.confirm.errors }}
+    </p>
+    <p class="actions">
+        <button type="submit" class="button-danger">Close case</button>
+        <a class="button-quiet" href="{{ case.get_absolute_url }}">Cancel</a>
+    </p>
+</form>
+{% endblock %}

@@ -18,9 +18,11 @@ class CaseAdmin(admin.ModelAdmin):
         "priority",
         "status",
         "trade",
+        "access",
+        "vulnerable",
         "created_at",
     )
-    list_filter = ("status", "priority", "repair_type", "trade")
+    list_filter = ("status", "priority", "repair_type", "trade", "access", "vulnerable")
     search_fields = ("reference", "address", "resident_name", "summary")
     inlines = [CaseNoteInline]
 

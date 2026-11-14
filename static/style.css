@@ -469,6 +469,37 @@ table.cases tbody tr:hover {
     grid-column: 1 / -1;
 }
 
+.field-vulnerable input,
+.check-row input {
+    width: auto;
+    margin-right: 8px;
+}
+
+.check-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-top: 18px;
+}
+
+.check-row label {
+    margin: 0;
+}
+
+.flag.vulnerable {
+    color: #6b140c;
+    background: #f3d2c4;
+    border-color: #8b1e12;
+}
+
+.flag.access-no_access,
+.flag.access-appointment {
+    color: #4a3a18;
+    background: #efe0c8;
+    border-color: #8a6a2a;
+}
+
 .trail {
     list-style: none;
     padding: 0;

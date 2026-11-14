@@ -44,6 +44,15 @@ class Case(models.Model):
         (STATUS_CLOSED, "Closed"),
     ]
 
+    ACCESS_AVAILABLE = "available"
+    ACCESS_NO_ACCESS = "no_access"
+    ACCESS_APPOINTMENT = "appointment"
+    ACCESS_CHOICES = [
+        (ACCESS_AVAILABLE, "Access available"),
+        (ACCESS_NO_ACCESS, "No access"),
+        (ACCESS_APPOINTMENT, "Appointment needed"),
+    ]
+
     TRADE_CHOICES = [
         ("plumber", "Plumber"),
         ("electrician", "Electrician"),
@@ -64,6 +73,16 @@ class Case(models.Model):
         max_length=30, choices=STATUS_CHOICES, default=STATUS_OPEN
     )
     trade = models.CharField(max_length=30, choices=TRADE_CHOICES)
+    access = models.CharField(
+        max_length=20,
+        choices=ACCESS_CHOICES,
+        default=ACCESS_AVAILABLE,
+        help_text="If there is no access, move status to Awaiting resident after you save.",
+    )
+    vulnerable = models.BooleanField(
+        default=False,
+        help_text="Child, older person, or a health condition that changes attendance.",
+    )
     summary = models.TextField(help_text="What was reported and why this priority.")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

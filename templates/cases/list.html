@@ -15,10 +15,13 @@
 </div>
 
 <div class="filter-bar">
-    <a class="{% if not status and not priority and not repair_type %}is-on{% endif %}" href="{% url 'case_list' %}">All jobs</a>
+    <a class="{% if not status and not priority and not repair_type and not access and not vulnerable_only %}is-on{% endif %}" href="{% url 'case_list' %}">All jobs</a>
     {% for value, label in priority_choices %}
     <a class="{% if priority == value %}is-on{% endif %}" href="?priority={{ value }}">{{ label }}</a>
     {% endfor %}
+    <a class="{% if vulnerable_only %}is-on{% endif %}" href="?vulnerable=1">Vulnerable</a>
+    <a class="{% if access == 'no_access' %}is-on{% endif %}" href="?access=no_access">No access</a>
+    <a class="{% if access == 'appointment' %}is-on{% endif %}" href="?access=appointment">Appointment needed</a>
     {% for value, label in repair_choices %}
     <a class="{% if repair_type == value %}is-on{% endif %}" href="?repair_type={{ value }}">{{ label }}</a>
     {% endfor %}
@@ -33,6 +36,7 @@
                 <th>Repair</th>
                 <th>Priority</th>
                 <th>Status</th>
+                <th>Access</th>
                 <th>Trade</th>
             </tr>
         </thead>
@@ -44,10 +48,15 @@
                 <td>{{ case.get_repair_type_display }}</td>
                 <td><span class="flag priority-{{ case.priority }}">{{ case.get_priority_display }}</span></td>
                 <td>{{ case.get_status_display }}</td>
+                <td>
+                    {% if case.vulnerable %}<span class="flag vulnerable">Vulnerable</span>{% endif %}
+                    {% if case.access != 'available' %}<span class="flag access-{{ case.access }}">{{ case.get_access_display }}</span>{% endif %}
+                    {% if not case.vulnerable and case.access == 'available' %}—{% endif %}
+                </td>
                 <td>{{ case.get_trade_display }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6">No cases match those filters. Raise a case or run <code>python manage.py seed_cases</code>.</td></tr>
+            <tr><td colspan="7">No cases match those filters. Raise a case or run <code>python manage.py seed_cases</code>.</td></tr>
             {% endfor %}
         </tbody>
     </table>

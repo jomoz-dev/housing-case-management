@@ -13,6 +13,8 @@ CASES = [
         "priority": Case.PRIORITY_EMERGENCY,
         "status": Case.STATUS_IN_PROGRESS,
         "trade": "plumber_electrician",
+        "access": Case.ACCESS_AVAILABLE,
+        "vulnerable": False,
         "summary": "Active leak into the kitchen, water on a socket. Raised as Emergency Plumber / Electrician.",
         "notes": [
             ("status", "Case opened as Open / Emergency."),
@@ -28,6 +30,8 @@ CASES = [
         "priority": Case.PRIORITY_EMERGENCY,
         "status": Case.STATUS_AWAITING_CONTRACTOR,
         "trade": "heating_engineer",
+        "access": Case.ACCESS_AVAILABLE,
+        "vulnerable": True,
         "summary": "No heating. Child under 5 in the household. Emergency heating engineer.",
         "notes": [
             ("status", "Case opened as Open / Emergency."),
@@ -42,6 +46,8 @@ CASES = [
         "priority": Case.PRIORITY_URGENT,
         "status": Case.STATUS_OPEN,
         "trade": "damp_specialist",
+        "access": Case.ACCESS_AVAILABLE,
+        "vulnerable": True,
         "summary": "Visible mould in the bedroom for more than 28 days. Resident reports asthma. Urgent damp specialist.",
         "notes": [
             ("status", "Case opened as Open / Urgent."),
@@ -56,7 +62,9 @@ CASES = [
         "priority": Case.PRIORITY_URGENT,
         "status": Case.STATUS_AWAITING_RESIDENT,
         "trade": "locksmith",
-        "summary": "Front door will not lock. Resident is staying in tonight. Urgent locksmith.",
+        "access": Case.ACCESS_NO_ACCESS,
+        "vulnerable": False,
+        "summary": "Front door will not lock. Resident is staying in tonight. Urgent locksmith. No access on first attendance.",
         "notes": [
             ("status", "Case opened as Open / Urgent."),
             ("status", "Status changed from Open to Awaiting resident. No access on first attendance."),
@@ -70,6 +78,8 @@ CASES = [
         "priority": Case.PRIORITY_URGENT,
         "status": Case.STATUS_CLOSED,
         "trade": "roofer",
+        "access": Case.ACCESS_AVAILABLE,
+        "vulnerable": False,
         "summary": "Water entering through the bedroom ceiling after heavy rain. Electrics dry. Urgent roofer.",
         "notes": [
             ("status", "Case opened as Open / Urgent."),
@@ -85,7 +95,9 @@ CASES = [
         "priority": Case.PRIORITY_ROUTINE,
         "status": Case.STATUS_OPEN,
         "trade": "electrician",
-        "summary": "Hall light flicker. No burning smell or sparking. Routine electrician.",
+        "access": Case.ACCESS_APPOINTMENT,
+        "vulnerable": False,
+        "summary": "Hall light flicker. No burning smell or sparking. Routine electrician. Resident asked for an evening appointment.",
         "notes": [
             ("status", "Case opened as Open / Routine."),
         ],

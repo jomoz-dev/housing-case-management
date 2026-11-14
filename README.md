@@ -24,6 +24,7 @@ SQLite is used locally. PostgreSQL can replace it later without changing the cas
 - Status: Open, Awaiting contractor, Awaiting resident, In progress, Closed
 - Case notes and an audit line when status changes
 - Close only after a confirmation page with a written reason (the case is not deleted)
+- Access and vulnerability flags on the case (no access, appointment needed, vulnerable household)
 - Search by reference, address or resident
 - Filters by status, priority and repair type
 - Counts on the case list

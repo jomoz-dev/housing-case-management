@@ -12,8 +12,16 @@ class CaseForm(forms.ModelForm):
             "repair_type",
             "priority",
             "trade",
+            "access",
+            "vulnerable",
             "summary",
         ]
+
+
+class AccessForm(forms.ModelForm):
+    class Meta:
+        model = Case
+        fields = ["access", "vulnerable"]
 
 
 class CaseNoteForm(forms.ModelForm):

@@ -11,6 +11,8 @@
             <span class="flag priority-{{ case.priority }}">{{ case.get_priority_display }}</span>
             <span class="flag status">{{ case.get_status_display }}</span>
             <span class="flag trade">{{ case.get_trade_display }}</span>
+            {% if case.vulnerable %}<span class="flag vulnerable">Vulnerable household</span>{% endif %}
+            {% if case.access != 'available' %}<span class="flag access-{{ case.access }}">{{ case.get_access_display }}</span>{% endif %}
         </p>
     </header>
     <p class="summary"><strong>{{ case.get_repair_type_display }}.</strong> {{ case.summary }}</p>
@@ -47,6 +49,20 @@
         </form>
     </section>
 </div>
+
+<section class="panel">
+    <h2>Access and vulnerability</h2>
+    <p class="lede">These flags tell the contractor who is in the household and whether they can get in. Changing them writes a line on the trail.</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="access">
+        <div class="raise-grid">
+            <p>{{ access_form.access.label_tag }}{{ access_form.access }}<span class="hint">{{ access_form.access.help_text }}</span></p>
+            <p class="check-row">{{ access_form.vulnerable }} {{ access_form.vulnerable.label_tag }}<span class="hint">{{ access_form.vulnerable.help_text }}</span></p>
+        </div>
+        <button type="submit">Save access flags</button>
+    </form>
+</section>
 
 <h2>Trail</h2>
 <ol class="trail">

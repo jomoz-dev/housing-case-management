@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import CaseForm, CaseNoteForm, CloseCaseForm, StatusForm
+from .forms import AccessForm, CaseForm, CaseNoteForm, CloseCaseForm, StatusForm
 from .models import Case, CaseNote
 
 
@@ -14,6 +14,8 @@ def case_list(request):
     status = request.GET.get("status", "").strip()
     priority = request.GET.get("priority", "").strip()
     repair_type = request.GET.get("repair_type", "").strip()
+    access = request.GET.get("access", "").strip()
+    vulnerable_only = request.GET.get("vulnerable") == "1"
 
     if query:
         cases = cases.filter(
@@ -34,6 +36,12 @@ def case_list(request):
         cases = cases.filter(repair_type=repair_type)
     else:
         repair_type = ""
+    if access in dict(Case.ACCESS_CHOICES) and access != Case.ACCESS_AVAILABLE:
+        cases = cases.filter(access=access)
+    else:
+        access = ""
+    if vulnerable_only:
+        cases = cases.filter(vulnerable=True)
 
     counts = {
         row["status"]: row["total"]
@@ -52,6 +60,8 @@ def case_list(request):
             "status": status,
             "priority": priority,
             "repair_type": repair_type,
+            "access": access,
+            "vulnerable_only": vulnerable_only,
             "status_choices": Case.STATUS_CHOICES,
             "priority_choices": Case.PRIORITY_CHOICES,
             "repair_choices": Case.REPAIR_CHOICES,
@@ -69,11 +79,18 @@ def case_create(request):
             case = form.save(commit=False)
             case.created_by = request.user
             case.save()
+            opening = (
+                f"Case opened as {case.get_status_display()} / {case.get_priority_display()}."
+            )
+            if case.vulnerable:
+                opening += " Vulnerable household."
+            if case.access != Case.ACCESS_AVAILABLE:
+                opening += f" {case.get_access_display()}."
             CaseNote.objects.create(
                 case=case,
                 author=request.user,
                 kind=CaseNote.STATUS,
-                body=f"Case opened as {case.get_status_display()} / {case.get_priority_display()}.",
+                body=opening,
             )
             messages.success(request, f"Case {case.reference} raised.")
             return redirect(case)
@@ -87,6 +104,7 @@ def case_detail(request, reference):
     case = get_object_or_404(Case, reference=reference)
     note_form = CaseNoteForm()
     status_form = StatusForm(initial={"status": case.status})
+    access_form = AccessForm(instance=case)
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -122,6 +140,25 @@ def case_detail(request, reference):
                 )
                 messages.success(request, "Status updated.")
                 return redirect(case)
+        elif action == "access":
+            access_form = AccessForm(request.POST, instance=case)
+            if access_form.is_valid():
+                previous_access = case.get_access_display()
+                previous_vulnerable = case.vulnerable
+                access_form.save()
+                case.refresh_from_db()
+                CaseNote.objects.create(
+                    case=case,
+                    author=request.user,
+                    kind=CaseNote.NOTE,
+                    body=(
+                        "Access / vulnerability updated: "
+                        f"{previous_access} → {case.get_access_display()}; "
+                        f"vulnerable {previous_vulnerable} → {case.vulnerable}."
+                    ),
+                )
+                messages.success(request, "Access and vulnerability updated.")
+                return redirect(case)
 
     return render(
         request,
@@ -130,6 +167,7 @@ def case_detail(request, reference):
             "case": case,
             "note_form": note_form,
             "status_form": status_form,
+            "access_form": access_form,
         },
     )
 

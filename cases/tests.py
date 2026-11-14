@@ -51,6 +51,7 @@ def test_create_case_assigns_reference_and_opening_note(client, advisor):
             "repair_type": Case.REPAIR_HEATING,
             "priority": Case.PRIORITY_URGENT,
             "trade": "heating_engineer",
+            "access": Case.ACCESS_AVAILABLE,
             "summary": "No heating overnight.",
         },
     )
@@ -146,3 +147,37 @@ def test_seed_loads_demo_cases():
     call_command("seed_cases")
     assert Case.objects.filter(reference="CM-DEMO-0001").exists()
     assert Case.objects.filter(status=Case.STATUS_CLOSED).exists()
+    assert Case.objects.filter(reference="CM-DEMO-0002", vulnerable=True).exists()
+    assert Case.objects.filter(reference="CM-DEMO-0004", access=Case.ACCESS_NO_ACCESS).exists()
+
+
+@pytest.mark.django_db
+def test_filter_vulnerable_and_no_access(client, advisor):
+    from django.core.management import call_command
+
+    call_command("seed_cases")
+    client.login(username="advisor", password="changeme")
+    vulnerable = client.get(reverse("case_list"), {"vulnerable": "1"})
+    assert b"4b Highbridge Street" in vulnerable.content
+    assert b"8 Abbeyview" not in vulnerable.content
+    no_access = client.get(reverse("case_list"), {"access": "no_access"})
+    assert b"2 The Green" in no_access.content
+    assert b"12 Oak Court" not in no_access.content
+
+
+@pytest.mark.django_db
+def test_update_access_writes_trail(client, advisor, case):
+    client.login(username="advisor", password="changeme")
+    response = client.post(
+        case.get_absolute_url(),
+        {
+            "action": "access",
+            "access": Case.ACCESS_NO_ACCESS,
+            "vulnerable": "on",
+        },
+    )
+    case.refresh_from_db()
+    assert response.status_code == 302
+    assert case.access == Case.ACCESS_NO_ACCESS
+    assert case.vulnerable is True
+    assert case.notes.filter(body__icontains="No access").exists()

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}New case — Housing Case Management{% endblock %}
+{% block content %}
+<p class="crumb"><a href="{% url 'case_list' %}">Cases</a> / New case</p>
+<h1>Raise a case</h1>
+<p class="lede">Use the diagnostic tool to decide Emergency / Urgent / Routine and the trade, then record the job here so later users can see the trail.</p>
+<form method="post" class="card wide">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="hint">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+    </p>
+    {% endfor %}
+    <button type="submit">Save case</button>
+</form>
+{% endblock %}

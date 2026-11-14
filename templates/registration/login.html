@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sign in — Housing Case Management{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>Housing Case Management</h1>
+    <p>Sign in to raise, progress and close repairs cases. This is not the diagnostic tool or the knowledge base — those decide and explain the job. This application is the case record.</p>
+    {% if form.errors %}
+    <p class="error-message">Username or password is not correct.</p>
+    {% endif %}
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <label for="id_username">Username</label>
+        <input id="id_username" type="text" name="username" required>
+        <label for="id_password">Password</label>
+        <input id="id_password" type="password" name="password" required>
+        <button type="submit">Sign in</button>
+    </form>
+    <p class="hint">Demo advisor: <code>advisor</code> / <code>changeme</code>. Admin: <code>admin</code> / <code>changeme</code>.</p>
+</div>
+{% endblock %}

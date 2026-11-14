@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ case.reference }} — Housing Case Management{% endblock %}
+{% block content %}
+<p class="crumb"><a href="{% url 'case_list' %}">Cases</a> / {{ case.reference }}</p>
+<article class="card wide">
+    <p class="pills">
+        <span class="pill priority-{{ case.priority }}">{{ case.get_priority_display }}</span>
+        <span class="pill">{{ case.get_status_display }}</span>
+        <span class="pill">{{ case.get_trade_display }}</span>
+    </p>
+    <h1>{{ case.reference }}</h1>
+    <p class="lede">{{ case.address }}{% if case.resident_name %} · {{ case.resident_name }}{% endif %}</p>
+    <p><strong>{{ case.get_repair_type_display }}</strong> — {{ case.summary }}</p>
+    <p class="meta">Raised {{ case.created_at|date:"d M Y H:i" }} by {{ case.created_by.username }}{% if case.closed_at %} · Closed {{ case.closed_at|date:"d M Y H:i" }}{% endif %}</p>
+</article>
+
+<div class="split">
+    <section>
+        <h2>Change status</h2>
+        <form method="post" class="card wide">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status">
+            {{ status_form.status.label_tag }}
+            {{ status_form.status }}
+            {{ status_form.comment.label_tag }}
+            {{ status_form.comment }}
+            <p class="hint">{{ status_form.comment.help_text }}</p>
+            <button type="submit">Update status</button>
+        </form>
+    </section>
+    <section>
+        <h2>Add a note</h2>
+        <form method="post" class="card wide">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="note">
+            {{ note_form.body }}
+            <button type="submit">Add note</button>
+        </form>
+    </section>
+</div>
+
+<h2>Case record</h2>
+<ul class="timeline">
+    {% for note in case.notes.all %}
+    <li>
+        <span class="meta">{{ note.created_at|date:"d M Y H:i" }} · {{ note.author.username }} · {{ note.get_kind_display }}</span>
+        <p>{{ note.body }}</p>
+    </li>
+    {% empty %}
+    <li>No notes yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

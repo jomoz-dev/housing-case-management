@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Housing Case Management{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="{% url 'case_list' %}">Housing Case Management</a>
+        {% if user.is_authenticated %}
+        <form class="search-form" method="get" action="{% url 'case_list' %}">
+            <label class="sr-only" for="q">Search</label>
+            <input id="q" type="text" name="q" value="{{ query|default:'' }}" placeholder="Reference, address, resident…">
+            <button type="submit">Search</button>
+        </form>
+        <nav class="user-nav">
+            <a href="{% url 'case_create' %}">New case</a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}">Admin</a>
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="linkish" type="submit">Sign out</button>
+            </form>
+        </nav>
+        {% endif %}
+    </div>
+</header>
+<main class="page">
+    {% if messages %}
+    {% for message in messages %}
+    <p class="flash">{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -181,3 +181,27 @@ def test_update_access_writes_trail(client, advisor, case):
     assert case.access == Case.ACCESS_NO_ACCESS
     assert case.vulnerable is True
     assert case.notes.filter(body__icontains="No access").exists()
+
+
+@pytest.mark.django_db
+def test_export_requires_login(client):
+    response = client.get(reverse("case_export"))
+    assert response.status_code == 302
+    assert reverse("login") in response.url
+
+
+@pytest.mark.django_db
+def test_export_csv_respects_filters(client, advisor):
+    from django.core.management import call_command
+
+    call_command("seed_cases")
+    client.login(username="advisor", password="changeme")
+    response = client.get(reverse("case_export"), {"priority": "emergency"})
+    assert response.status_code == 200
+    assert response["Content-Type"].startswith("text/csv")
+    body = response.content.decode("utf-8-sig")
+    assert "Reference" in body
+    assert "Vulnerable" in body
+    assert "CM-DEMO-0001" in body
+    assert "CM-DEMO-0002" in body
+    assert "CM-DEMO-0006" not in body

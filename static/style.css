@@ -232,6 +232,15 @@ button,
     cursor: pointer;
     font: inherit;
     letter-spacing: 0.02em;
+    text-decoration: none;
+    display: inline-block;
+}
+
+a.button.export {
+    margin-left: 12px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    vertical-align: middle;
 }
 
 button:hover,

@@ -1,14 +1,17 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from .forms import AccessForm, CaseForm, CaseNoteForm, CloseCaseForm, StatusForm
 from .models import Case, CaseNote
 
 
-@login_required
-def case_list(request):
+def filtered_cases(request):
     cases = Case.objects.all()
     query = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
@@ -43,6 +46,19 @@ def case_list(request):
     if vulnerable_only:
         cases = cases.filter(vulnerable=True)
 
+    return cases, {
+        "query": query,
+        "status": status,
+        "priority": priority,
+        "repair_type": repair_type,
+        "access": access,
+        "vulnerable_only": vulnerable_only,
+    }
+
+
+@login_required
+def case_list(request):
+    cases, filters = filtered_cases(request)
     counts = {
         row["status"]: row["total"]
         for row in Case.objects.values("status").annotate(total=Count("id"))
@@ -56,19 +72,64 @@ def case_list(request):
         "cases/list.html",
         {
             "cases": cases,
-            "query": query,
-            "status": status,
-            "priority": priority,
-            "repair_type": repair_type,
-            "access": access,
-            "vulnerable_only": vulnerable_only,
             "status_choices": Case.STATUS_CHOICES,
             "priority_choices": Case.PRIORITY_CHOICES,
             "repair_choices": Case.REPAIR_CHOICES,
             "status_cards": status_cards,
             "open_total": Case.objects.exclude(status=Case.STATUS_CLOSED).count(),
+            **filters,
         },
     )
+
+
+@login_required
+def case_export(request):
+    cases, _filters = filtered_cases(request)
+    stamp = timezone.localdate().isoformat()
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = (
+        f'attachment; filename="housing-cases-{stamp}.csv"'
+    )
+    response.write("\ufeff")
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Reference",
+            "Address",
+            "Resident",
+            "Repair type",
+            "Priority",
+            "Status",
+            "Trade",
+            "Access",
+            "Vulnerable",
+            "Summary",
+            "Raised",
+            "Closed",
+            "Raised by",
+        ]
+    )
+    for case in cases:
+        writer.writerow(
+            [
+                case.reference,
+                case.address,
+                case.resident_name,
+                case.get_repair_type_display(),
+                case.get_priority_display(),
+                case.get_status_display(),
+                case.get_trade_display(),
+                case.get_access_display(),
+                "Yes" if case.vulnerable else "No",
+                case.summary,
+                timezone.localtime(case.created_at).strftime("%Y-%m-%d %H:%M"),
+                timezone.localtime(case.closed_at).strftime("%Y-%m-%d %H:%M")
+                if case.closed_at
+                else "",
+                case.created_by.username,
+            ]
+        )
+    return response
 
 
 @login_required

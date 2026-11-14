@@ -3,7 +3,10 @@
 {% block content %}
 <p class="eyebrow">Caseload</p>
 <h1>Open the record, not a spreadsheet</h1>
-<p class="lede">{{ open_total }} jobs still live. Filter by where the work sits, then open the reference.</p>
+<p class="lede">
+    {{ open_total }} jobs still live. Filter by where the work sits, then open the reference.
+    <a class="button export" href="{% url 'case_export' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">Export CSV</a>
+</p>
 
 <div class="totals">
     {% for value, label, total in status_cards %}
